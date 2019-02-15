@@ -1,20 +1,21 @@
 {
-    "name": "SpeakBitch",
-    "description": "Hey bitch, speak",
+    "name": "Listener",
+    "description": "hello, please speak to me",
     "version": "0.1",
     "manifest_version": 2,
     "author": "Jake Wright and Jacob Beckerman",
 
+    "content_scripts": [{
+        "matches": ["<all_urls>"],
+        "js": ["libraries/p5.js", "libraries/p5.dom.js", "sketch.js"]
+    }],
+
     "browser_action": {
-        "default_icon": "tab_icon_1.jpg",
-        "default_title": "bitch pls speak",
+        "default_title": "I am listening ::)",
         "default_popup": "popup.html"
     },
 
-    "content_scripts": [{
-        "matches": ["<all_urls>"],
-        "js": ["scripts/content.js"]
-    }],
+    
 
     "permissions": ["tabs"]
 }
