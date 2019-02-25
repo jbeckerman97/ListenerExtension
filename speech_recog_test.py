@@ -1,6 +1,17 @@
+#!flask/bin/python
+
+from flask import Flask, request, redirect, Response
 import json
 import keyboard
+import nativemessaging
+import socket
 import speech_recognition as sr
+import struct
+import sys
+
+app = Flask(__name__)
+
+keyword = ''
 
 def write_to_json(command):
     input = {}
@@ -36,6 +47,20 @@ def read_from_json(spoken):
     except FileNotFoundError:
         print("File does not exist!")
 
+@app.route('/', methods=['GET', 'POST'])
+def parse_and_send_json(command):
+    data = request.get_json()
+    result = ''
+
+    for item in data:
+        result += str(item['page-data']) + '\n'
+
+    if keyword in result:
+        return keyword
+
+def get_message():
+    raw_length = sys.stdin.read()
+
 def main():
     r = sr.Recognizer()
 
@@ -62,12 +87,17 @@ def main():
             try:
                 audio = r.listen(source, phrase_time_limit=10)
                 spoken = r.recognize_google(audio)
+                keyword = spoken
                 print(spoken)
 
                 if spoken == "quit":
                     keep_running = False
 
-                read_from_json(spoken)
+                #message = nativemessaging.get_message()
+                #if spoken in message:
+                #    nativemessaging.send_message(nativemessaging.encode_message(spoken))
+
+                #read_from_json(spoken)
 
             except sr.UnknownValueError:
                 print("Couldn't understand voice input!")
