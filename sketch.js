@@ -24,6 +24,25 @@ function Commands(txt, command, link) {
     }
 }
 
+function speechRecognition() {
+    var speechRecog = new (window.SpeechRecognition || window.webkitSpeechRecognition || window.mozSpeechRecognition || window.msSpeechRecognition)();
+    var recognition = new webkitSpeechRecognition();
+    recognition.continuous = true;
+
+    recognition.start();
+    var index = 0;
+
+    recognition.onresult = function() {
+        //console.log(event.results[index][0].transcript);
+        for (let i = 0; i < commands.length; i++) {
+            if (commands[i].command.includes(event.results[index][0].transcript)) {
+                console.log('success');
+                window.location.href = commands[i].link;
+            }
+        }
+        index++;
+    }
+}
 
 function setup() {
     cnv = createCanvas(400, 850);
@@ -39,19 +58,27 @@ function setup() {
         let link = linkElement.href;
         let txt = linkElement.text;
         if (!/\S/.test(txt)) {continue;}
-        let command = (txt.length > 10) ? "Link " + linkIndices++ : txt;
+        let command = (txt.length > 20) ? "Link " + linkIndices++ : txt;
         let current = new Commands(txt, command, link);
 
         linkElement.style['background-color'] = '#9988cc';
         linkElement.style['color'] = 'white';
-        console.log(txt);
+        //console.log(txt);
 
         commands.push(current);
     }
+
+    speechRecognition();
+    
+    
 }
 
 function draw() {
     background('#8573bc');
+    
+    if (commands.length <= 21) {
+        noLoop();
+    }
 
     for (let i = 0; i < commands.length; i++) {
         let thisY = (i + 1) * 40 - scrollY;
@@ -69,6 +96,7 @@ function draw() {
         }
 
     }
+
     if (newScroll) {
         scrollY2--;
         if (scrollY2 === 1) {
