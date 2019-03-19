@@ -6,6 +6,15 @@ window.browser = (function() {
         window.chrome;
 })();
 
+navigationCommands = [
+    "Scroll down",
+    "Scroll up",
+    "Go back",
+    "Go forward",
+    "Refresh",
+    "New URL"
+]
+
 var cnv;
 var commands = [];
 var linkIndices = 1;
@@ -17,10 +26,10 @@ function Commands(txt, command, link) {
     this.txt = txt;
     this.command = command;
     this.link = link;
-    this.output = (this.txt !== this.command) ? this.command + " >> " + this.txt : this.txt;
+    //this.output = (this.txt !== this.command) ? this.command + " >> " + this.txt : this.txt;
 
     this.writeText = function(x, y) {
-        text(this.output, x, y);
+        text(this.command, x, y);
     }
 }
 
@@ -35,13 +44,31 @@ function speechRecognition() {
     recognition.onresult = function() {
         //console.log(event.results[index][0].transcript);
         for (let i = 0; i < commands.length; i++) {
-            if (commands[i].command.includes(event.results[index][0].transcript)) {
+            isSpokenBrowserCommand = stringManipulation(event.results[index][0].transcript, navigationCommands[i])
+            isSpokenEqualToLink = stringManipulation(event.results[index][0].transcript, commands[i].command)
+            console.log(event.results[index][0].transcript)
+            if (isSpokenBrowserCommand) {
+                console.log('browser command')
+            }
+            if (isSpokenEqualToLink) {
                 console.log('success');
                 window.location.href = commands[i].link;
             }
         }
         index++;
     }
+}
+
+function stringManipulation(spokenText, linkText) {
+    spokenText = spokenText.replace(/\s+/g, '')
+    spokenText = spokenText.toLowerCase()
+    linkText = linkText.replace(/\s+/g, '')
+    linkText = linkText.toLowerCase()
+    if (spokenText == linkText) {
+        return true
+    }
+
+    return false
 }
 
 function setup() {
@@ -61,8 +88,8 @@ function setup() {
         let command = (txt.length > 20) ? "Link " + linkIndices++ : txt;
         let current = new Commands(txt, command, link);
 
-        linkElement.style['background-color'] = '#9988cc';
-        linkElement.style['color'] = 'white';
+        //linkElement.style['background-color'] = '#9988cc';
+        //linkElement.style['color'] = 'white';
         //console.log(txt);
 
         commands.push(current);
