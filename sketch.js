@@ -21,11 +21,13 @@ var linkIndices = 1;
 var scrollY = 0;
 var newScroll = false;
 var scrollY2 = 850;
+var scrollTop = 0;
 
-function Commands(txt, command, link) {
+function Commands(txt, command, link, color) {
     this.txt = txt;
     this.command = command;
     this.link = link;
+    this.color = color;
     //this.output = (this.txt !== this.command) ? this.command + " >> " + this.txt : this.txt;
 
     this.writeText = function(x, y) {
@@ -44,12 +46,12 @@ function speechRecognition() {
     recognition.onresult = function() {
         //console.log(event.results[index][0].transcript);
         for (let i = 0; i < commands.length; i++) {
-            isSpokenBrowserCommand = stringManipulation(event.results[index][0].transcript, navigationCommands[i])
+            //isSpokenBrowserCommand = stringManipulation(event.results[index][0].transcript, navigationCommands[i])
             isSpokenEqualToLink = stringManipulation(event.results[index][0].transcript, commands[i].command)
             console.log(event.results[index][0].transcript)
-            if (isSpokenBrowserCommand) {
-                console.log('browser command')
-            }
+            //if (isSpokenBrowserCommand) {
+            //    console.log('browser command')
+            //}
             if (isSpokenEqualToLink) {
                 console.log('success');
                 window.location.href = commands[i].link;
@@ -60,15 +62,15 @@ function speechRecognition() {
 }
 
 function stringManipulation(spokenText, linkText) {
-    spokenText = spokenText.replace(/\s+/g, '')
-    spokenText = spokenText.toLowerCase()
-    linkText = linkText.replace(/\s+/g, '')
-    linkText = linkText.toLowerCase()
+    spokenText = spokenText.replace(/\s+/g, '');
+    spokenText = spokenText.toLowerCase();
+    linkText = linkText.replace(/\s+/g, '');
+    linkText = linkText.toLowerCase();
     if (spokenText == linkText) {
-        return true
+        return true;
     }
 
-    return false
+    return false;
 }
 
 function setup() {
@@ -76,7 +78,7 @@ function setup() {
     cnv.position(windowWidth - 420, 50);
     background('#8573bc');
 
-    fill(255);
+    fill(30);
     textSize(22);
 
     var links = document.getElementsByTagName('a');
@@ -101,7 +103,16 @@ function setup() {
 }
 
 function draw() {
-    background('#8573bc');
+    background('#9ec3ff');
+    scrollTop = (window.pageYOffset !== undefined) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
+
+    if (scrollTop > 0) {
+        cnv.position(windowWidth - 420, 50 + scrollTop);
+    }
+    
+    this.windowResized = function() {
+        cnv.position(windowWidth - 420, 50);
+    }
     
     if (commands.length <= 21) {
         noLoop();
