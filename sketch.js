@@ -1,20 +1,13 @@
 console.log("Listener Extension running");
-
-/*
-CURRENT ISSUES:
-    Major:
-    - Good system for separating links from scraped tags
-    - Canvas interferes with page
-
-    Minor:
-    - Microphone/General settings
-*/
+// window.addEventListener ("load", setup, false);
 
 window.browser = (function() {
     return window.msBrowser ||
         window.browser ||
         window.chrome;
 })();
+
+startSketch();
 
 var navigationCommands = [
     "scrolldown",
@@ -40,10 +33,11 @@ function Commands(txt, command, link, color) {
     this.command = command;
     this.link = link;
     this.color = color;
-    //this.output = (this.txt.length > 20) ? this.command + " >> " + this.txt : this.txt;
+    //this.output = (this.txt !== this.command) ? this.command + " >> " + this.txt : this.txt;
 
-    this.writeText = function(x, y) {
-        text(this.command, x, y);
+    // variable p is the instance of p5 being run
+    this.writeText = function(x, y, p) {
+        p.text(this.command, x, y);
     }
 }
 
@@ -112,84 +106,89 @@ function executeNavigationCommand(spokenText) {
     }
 }
 
-function setup() {
-    cnv = createCanvas(400, 850);
-    cnv.position(windowWidth - 420, 50);
-    background('#9ec3ff');
+function startSketch() {
 
-    fill(30);
-    textSize(22);
+    var sketch = function( p ) {
+        p.setup = function() {
+            cnv = p.createCanvas(400, 850);
+            cnv.position(p.windowWidth - 420, 50);
+            cnv.style('z-index', '999');
+            p.background('#9ec3ff');
 
-    var links = document.getElementsByTagName('a');
+            p.fill(30);
+            p.textSize(22);
 
-    for (linkElement of links) {
-        let link = linkElement.href;
-        let txt = linkElement.text;
-        txt = txt.replace(/[^\w\s]/gi, '') // Replace non-alphanumeric characters
-        if (!/\S/.test(txt)) {continue;} // Ignore whitespace
-        //let command = (txt.length > 20) ? "Link " + linkIndices++ : txt;
-        let command;
-        if (txt.length <= 20) {
-            command = txt;
-        } else {
-            command = "Link " + linkIndices;
-            linkElement.text = command + ": " + linkElement.text;
-            linkIndices++;
-        }
-        let current = new Commands(txt, command, link);
+            var links = document.getElementsByTagName('a');
 
-        //linkElement.style['background-color'] = '#9988cc';
-        //linkElement.style['color'] = 'white';
-        //console.log(txt);
+            for (linkElement of links) {
+                let link = linkElement.href;
+                let txt = linkElement.text;
+                if (!/\S/.test(txt)) {continue;}
+                //let command = (txt.length > 20) ? "Link " + linkIndices++ : txt;
+                let command;
+                if (txt.length <= 20) {
+                    command = txt;
+                } else {
+                    command = "Link " + linkIndices;
+                    linkElement.text = command + ": " + linkElement.text;
+                    linkIndices++;
+                }
+                let current = new Commands(txt, command, link);
 
-        commands.push(current);
-    }
+                //linkElement.style['background-color'] = '#9988cc';
+                //linkElement.style['color'] = 'white';
+                //console.log(txt);
 
-    speechRecognition();
-    
-    
-}
+                commands.push(current);
+            }
 
-function draw() {
-    background('#9ec3ff');
-    scrollTop = (window.pageYOffset !== undefined) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
+            speechRecognition();
+        };
 
-    if (scrollTop > 0) {
-        cnv.position(windowWidth - 420, 50 + scrollTop);
-    }
-    
-    this.windowResized = function() {
-        cnv.position(windowWidth - 420, 50);
-    }
-    
-    if (commands.length <= 21) {
-        noLoop();
-    }
+        p.draw = function() {
+            p.background('#9ec3ff');
+            scrollTop = (window.pageYOffset !== undefined) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
 
-    for (let i = 0; i < commands.length; i++) {
-        let thisY = (i + 1) * 40 - scrollY;
-        if (thisY > 0 && thisY <= 875) {
-            commands[i].writeText(40, thisY);
-        }
+            if (scrollTop > 0) {
+                cnv.position(p.windowWidth - 420, 50 + scrollTop);
+            }
+            
+            this.windowResized = function() {
+                cnv.position(p.windowWidth - 420, 50);
+            }
+            
+            if (commands.length <= 21) {
+                p.noLoop();
+            }
 
-        if (i === commands.length - 1 && thisY === 850) {
-            newScroll = true;
-        }
-        
-        if (newScroll && i < 21) {
-            thisY = (i + 1) * 40 + scrollY2;
-            commands[i].writeText(40, thisY);
-        }
+            for (let i = 0; i < commands.length; i++) {
+                let thisY = (i + 1) * 40 - scrollY;
+                if (thisY > 0 && thisY <= 875) {
+                    commands[i].writeText(40, thisY, p);
+                }
 
-    }
+                if (i === commands.length - 1 && thisY === 850) {
+                    newScroll = true;
+                }
+                
+                if (newScroll && i < 21) {
+                    thisY = (i + 1) * 40 + scrollY2;
+                    commands[i].writeText(40, thisY, p);
+                }
 
-    if (newScroll) {
-        scrollY2--;
-        if (scrollY2 === 1) {
-            newScroll = false;
-            scrollY = 0;
-            scrollY2 = 850;
-        }
-    }
-    scrollY++;
+            }
+
+            if (newScroll) {
+                scrollY2--;
+                if (scrollY2 === 1) {
+                    newScroll = false;
+                    scrollY = 0;
+                    scrollY2 = 850;
+                }
+            }
+            scrollY++;
+        };
+    };
+
+    var myp5 = new p5(sketch);
 }
