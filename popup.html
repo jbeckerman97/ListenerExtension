@@ -1,14 +1,22 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="popup.css"/>
+  </head>
+  <body>
+    <h1> SpeakEasy </h1>
+    <p> Jacob Beckerman &amp; Jake Wright </p>
+    <p> Champlain College 2019 </p>
+    <p id="test">Hello</p>
 
-</head>
-<body>
-    <style>
-        .container {
-            max-height: 600px;
-            max-width: 300px;
-        }
-    </style>
-</body>
+    <!-- Dropdown button code from https://www.w3schools.com/howto/howto_css_dropdown.asp -->
+    <div class="microphone-menu">
+        <button class="dropdown">Dropdown</button>
+        <div id="myDropdown" class="dropdown-content">
+          <a href="#">Microphone 1</a>
+          <a href="#">Microphone 2</a>
+        </div>
+    </div>
+  </body>
 </html>

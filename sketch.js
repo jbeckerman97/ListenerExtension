@@ -1,19 +1,31 @@
 console.log("Listener Extension running");
 
+/*
+CURRENT ISSUES:
+    Major:
+    - Good system for separating links from scraped tags
+    - Canvas interferes with page
+
+    Minor:
+    - Microphone/General settings
+*/
+
 window.browser = (function() {
     return window.msBrowser ||
         window.browser ||
         window.chrome;
 })();
 
-navigationCommands = [
-    "Scroll down",
-    "Scroll up",
-    "Go back",
-    "Go forward",
-    "Refresh",
-    "New URL"
-]
+var navigationCommands = [
+    "scrolldown",
+    "scrollup",
+    "goback",
+    "goforward",
+    "refresh",
+    "newurl"
+];
+
+var WORDS_TO_SHOW = 4;
 
 var cnv;
 var commands = [];
@@ -28,7 +40,7 @@ function Commands(txt, command, link, color) {
     this.command = command;
     this.link = link;
     this.color = color;
-    //this.output = (this.txt !== this.command) ? this.command + " >> " + this.txt : this.txt;
+    //this.output = (this.txt.length > 20) ? this.command + " >> " + this.txt : this.txt;
 
     this.writeText = function(x, y) {
         text(this.command, x, y);
@@ -44,14 +56,10 @@ function speechRecognition() {
     var index = 0;
 
     recognition.onresult = function() {
-        //console.log(event.results[index][0].transcript);
+        console.log(event.results[index][0].transcript);
         for (let i = 0; i < commands.length; i++) {
-            //isSpokenBrowserCommand = stringManipulation(event.results[index][0].transcript, navigationCommands[i])
-            isSpokenEqualToLink = stringManipulation(event.results[index][0].transcript, commands[i].command)
-            console.log(event.results[index][0].transcript)
-            //if (isSpokenBrowserCommand) {
-            //    console.log('browser command')
-            //}
+            isSpokenEqualToLink = stringManipulation(event.results[index][0].transcript, commands[i].command);
+            console.log(event.results[index][0].transcript);
             if (isSpokenEqualToLink) {
                 console.log('success');
                 window.location.href = commands[i].link;
@@ -62,9 +70,15 @@ function speechRecognition() {
 }
 
 function stringManipulation(spokenText, linkText) {
-    spokenText = spokenText.replace(/\s+/g, '');
+    spokenText = spokenText.replace(/\s+/g, ''); // Remove whitespace
     spokenText = spokenText.toLowerCase();
-    linkText = linkText.replace(/\s+/g, '');
+
+    let newURLCommand = spokenText.substring(0, 6);
+    if (navigationCommands.indexOf(spokenText) > -1 || newURLCommand == "newurl") {
+        executeNavigationCommand(spokenText);
+    }
+
+    linkText = linkText.replace(/\s+/g, ''); // Remove whitespace
     linkText = linkText.toLowerCase();
     if (spokenText == linkText) {
         return true;
@@ -73,10 +87,35 @@ function stringManipulation(spokenText, linkText) {
     return false;
 }
 
+function executeNavigationCommand(spokenText) {
+    if (spokenText.substring(0, 6) == "newurl") {
+        let website = spokenText.substring(6, spokenText.length);
+        window.location.assign("http://www." + website);
+        return;
+    }
+    switch (spokenText) {
+        case "scrolldown":
+            window.scrollBy(0, 500);
+            break;
+        case "scrollup":
+            window.scrollBy(0, -500);
+            break;
+        case "goback":
+            window.history.go(-1);
+            break;
+        case "goforward":
+            window.history.go(+1);
+            break;
+        case "refresh":
+            window.location.reload();
+            break;
+    }
+}
+
 function setup() {
     cnv = createCanvas(400, 850);
     cnv.position(windowWidth - 420, 50);
-    background('#8573bc');
+    background('#9ec3ff');
 
     fill(30);
     textSize(22);
@@ -86,8 +125,17 @@ function setup() {
     for (linkElement of links) {
         let link = linkElement.href;
         let txt = linkElement.text;
-        if (!/\S/.test(txt)) {continue;}
-        let command = (txt.length > 20) ? "Link " + linkIndices++ : txt;
+        txt = txt.replace(/[^\w\s]/gi, '') // Replace non-alphanumeric characters
+        if (!/\S/.test(txt)) {continue;} // Ignore whitespace
+        //let command = (txt.length > 20) ? "Link " + linkIndices++ : txt;
+        let command;
+        if (txt.length <= 20) {
+            command = txt;
+        } else {
+            command = "Link " + linkIndices;
+            linkElement.text = command + ": " + linkElement.text;
+            linkIndices++;
+        }
         let current = new Commands(txt, command, link);
 
         //linkElement.style['background-color'] = '#9988cc';
