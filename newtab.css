@@ -1,0 +1,24 @@
+html, body {
+    height: 90%;
+    width: 85%;
+    margin: auto;
+}
+
+body {
+    height: 90%;
+    font: caption;
+    background-color: #9EC3FF;
+    font-size: 18pt;
+    text-align: inherit;
+}
+
+h1 {
+    text-align: center;
+    font-size: 100pt;
+    color: #ed9eff;
+    text-shadow: 5px 5px #042c6d;
+}
+
+br {
+    line-height: 5px;
+}
