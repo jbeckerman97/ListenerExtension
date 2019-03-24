@@ -15,7 +15,8 @@ var navigationCommands = [
     "goback",
     "goforward",
     "refresh",
-    "newurl"
+    "newurl",
+    "newtab"
 ];
 
 var WORDS_TO_SHOW = 4;
@@ -53,6 +54,7 @@ function speechRecognition() {
         console.log(event.results[index][0].transcript);
         for (let i = 0; i < commands.length; i++) {
             isSpokenEqualToLink = stringManipulation(event.results[index][0].transcript, commands[i].command);
+            if (isSpokenEqualToLink === 10) { break; }
             console.log(event.results[index][0].transcript);
             if (isSpokenEqualToLink) {
                 console.log('success');
@@ -69,7 +71,8 @@ function stringManipulation(spokenText, linkText) {
 
     let newURLCommand = spokenText.substring(0, 6);
     if (navigationCommands.indexOf(spokenText) > -1 || newURLCommand == "newurl") {
-        executeNavigationCommand(spokenText);
+        let navTest = executeNavigationCommand(spokenText);
+        return navTest;
     }
 
     linkText = linkText.replace(/\s+/g, ''); // Remove whitespace
@@ -103,7 +106,12 @@ function executeNavigationCommand(spokenText) {
         case "refresh":
             window.location.reload();
             break;
+        case "newtab":
+            window.open("http://www.google.com");
+            break;
     }
+
+    return 10;
 }
 
 function startSketch() {
