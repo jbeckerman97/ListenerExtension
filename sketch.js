@@ -1,5 +1,4 @@
 console.log("Listener Extension running");
-// window.addEventListener ("load", setup, false);
 
 window.browser = (function() {
     return window.msBrowser ||
@@ -45,6 +44,7 @@ function Commands(txt, command, link, color) {
 function speechRecognition() {
     var speechRecog = new (window.SpeechRecognition || window.webkitSpeechRecognition || window.mozSpeechRecognition || window.msSpeechRecognition)();
     var recognition = new webkitSpeechRecognition();
+
     recognition.continuous = true;
 
     recognition.start();
@@ -77,7 +77,16 @@ function stringManipulation(spokenText, linkText) {
 
     linkText = linkText.replace(/\s+/g, ''); // Remove whitespace
     linkText = linkText.toLowerCase();
-    if (spokenText == linkText) {
+
+    if (spokenText === "lincone" && linkText === "link1") {
+        return true;
+    } else if (spokenText === "linkto" && linkText === "link2") {
+        return true;
+    } else if (spokenText === "linkfor" && linkText === "link4") {
+        return true;
+    }
+
+    if (spokenText === linkText) {
         return true;
     }
 
@@ -90,6 +99,7 @@ function executeNavigationCommand(spokenText) {
         window.location.assign("http://www." + website);
         return;
     }
+
     switch (spokenText) {
         case "scrolldown":
             window.scrollBy(0, 500);

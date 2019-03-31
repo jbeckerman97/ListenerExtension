@@ -1,7 +1,7 @@
 {
-    "name": "Listener",
-    "description": "hello, please speak to me",
-    "version": "0.1",
+    "name": "SpeakEasy",
+    "description": "Voice-navigation tool",
+    "version": "0.5",
     "manifest_version": 2,
     "author": "Jake Wright and Jacob Beckerman",
 
@@ -15,7 +15,14 @@
         "default_popup": "popup.html"
     },
 
-    
+    "permissions": ["tabs", "history", "file:///*"],
 
-    "permissions": ["tabs"]
+    "options_ui": {
+        "page": "options.html",
+        "open_in_tab": false
+    },
+
+    "chrome_url_overrides": {
+        "newtab": "newtab.html"
+    }
 }
