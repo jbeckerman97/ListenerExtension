@@ -77,7 +77,7 @@ function stringManipulation(spokenText, linkText) {
         return navTest;
     }
     
-    if (linkText.indludes("&")) {
+    if (linkText.includes("&")) {
         linkText = linkText.replace("&", "and");
     }
 
