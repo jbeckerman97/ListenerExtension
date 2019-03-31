@@ -37,6 +37,7 @@ function Commands(txt, command, link, color) {
 
     // variable p is the instance of p5 being run
     this.writeText = function(x, y, p) {
+        p.fill(56);
         p.text(this.command, x, y);
     }
 }
@@ -66,6 +67,7 @@ function speechRecognition() {
 }
 
 function stringManipulation(spokenText, linkText) {
+    
     spokenText = spokenText.replace(/\s+/g, ''); // Remove whitespace
     spokenText = spokenText.toLowerCase();
 
@@ -74,8 +76,13 @@ function stringManipulation(spokenText, linkText) {
         let navTest = executeNavigationCommand(spokenText);
         return navTest;
     }
+    
+    if (linkText.indludes("&")) {
+        linkText = linkText.replace("&", "and");
+    }
 
-    linkText = linkText.replace(/\s+/g, ''); // Remove whitespace
+    // If things stop working, get rid of and replace
+    linkText = linkText.replace(/[^a-z0-9]/gmi, " ").replace(/\s+/g, ''); // Remove whitespace
     linkText = linkText.toLowerCase();
 
     if (spokenText === "lincone" && linkText === "link1") {
@@ -124,14 +131,17 @@ function executeNavigationCommand(spokenText) {
     return 10;
 }
 
+
 function startSketch() {
 
     var sketch = function( p ) {
         p.setup = function() {
-            cnv = p.createCanvas(400, 850);
-            cnv.position(p.windowWidth - 420, 50);
+            let canvasWidth = p.displayWidth * 0.2;
+            let canvasHeight = p.displayHeight * 0.8;
+            cnv = p.createCanvas(canvasWidth, canvasHeight);
+            cnv.position(p.windowWidth - (p.width * 1.1), 50);
             cnv.style('z-index', '999');
-            p.background('#9ec3ff');
+            //p.background('#9ec3ff');
 
             p.fill(30);
             p.textSize(22);
@@ -161,18 +171,23 @@ function startSketch() {
             }
 
             speechRecognition();
-        };
+        }
 
         p.draw = function() {
-            p.background('#9ec3ff');
+            //p.background('#9ec3ff');
+            p.noStroke();
+            p.fill(56);
+            p.rect(0, 20, p.width * 0.95, p.height - 20);
+            p.fill('#9ec3ff');
+            p.rect(20, 0, p.width * 0.95, p.height - 20);
             scrollTop = (window.pageYOffset !== undefined) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
 
             if (scrollTop > 0) {
-                cnv.position(p.windowWidth - 420, 50 + scrollTop);
+                cnv.position(p.windowWidth - (p.width * 1.1), 50 + scrollTop);
             }
             
             this.windowResized = function() {
-                cnv.position(p.windowWidth - 420, 50);
+                cnv.position(p.windowWidth - (p.width * 1.1), 50);
             }
             
             if (commands.length <= 21) {
@@ -181,17 +196,17 @@ function startSketch() {
 
             for (let i = 0; i < commands.length; i++) {
                 let thisY = (i + 1) * 40 - scrollY;
-                if (thisY > 0 && thisY <= 875) {
-                    commands[i].writeText(40, thisY, p);
+                if (thisY > 0 && thisY <= p.height) {
+                    commands[i].writeText(p.width * 0.15, thisY, p);
                 }
 
-                if (i === commands.length - 1 && thisY === 850) {
+                if (i === commands.length - 1 && thisY === p.height) {
                     newScroll = true;
                 }
                 
                 if (newScroll && i < 21) {
                     thisY = (i + 1) * 40 + scrollY2;
-                    commands[i].writeText(40, thisY, p);
+                    commands[i].writeText(p.width * 0.15, thisY, p);
                 }
 
             }
@@ -201,12 +216,16 @@ function startSketch() {
                 if (scrollY2 === 1) {
                     newScroll = false;
                     scrollY = 0;
-                    scrollY2 = 850;
+                    scrollY2 = p.height;
                 }
             }
             scrollY++;
+
+            p.windowResized = function() {
+                cnv.position(p.windowWidth - 420, 50);
+            };
         };
-    };
+    }
 
     var myp5 = new p5(sketch);
 }
