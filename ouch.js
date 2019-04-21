@@ -207,11 +207,39 @@ function startSketch() {
         **** displays this text as a continually scrolling list, unless all available commands 
         ****    can fit in the canvas at once
         ***/
-            p.noStroke();
-            p.fill(56);
-            p.rect(0, 20, p.width * 0.95 + 20, p.height - 20);
-            p.fill('#9ec3ff');
-            p.rect(20, 0, p.width * 0.95, p.height - 20);
+			p.noStroke();
+			p.fill(56);
+			p.rect(0, 20, p.width * 0.95 + 20, p.height - 20);
+			p.fill('#9ec3ff');
+			p.rect(20, 0, p.width * 0.95, p.height - 20);
+			for (let i = 0; i < listCommands.length; i++) {
+				let thisY = (i + 1) * 40 - scrollY;
+				if (thisY > 0 && thisY <= p.height) {
+					listCommands[i].writeText(p.width * 0.15, thisY, p);
+				}
+				if (listCommands.length > 21) {
+					if (i === listCommands.length - 1 && thisY <= p.height) {
+						newScroll = true;
+					}
+					
+					if (newScroll && i < 21) {
+						thisY = (i + 1) * 40 + scrollY2;
+						listCommands[i].writeText(p.width * 0.15, thisY, p);
+					}
+				}
+			}
+			if (listCommands.length > 21) {
+				if (newScroll) {
+					scrollY2--;
+					if (scrollY2 === 1) {
+						newScroll = false;
+						scrollY = 0;
+						scrollY2 = p.height;
+					}
+				}
+				scrollY++;
+            }
+			
             scrollTop = (window.pageYOffset !== undefined) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
 
             if (scrollTop > 0) {
@@ -222,35 +250,7 @@ function startSketch() {
                 cnv.position(p.windowWidth - p.width , 50);
             }
             
-            // p.floor((p.height - 20) * 0.025)
-            if (listCommands.length > 21) {
-                for (let i = 0; i < listCommands.length; i++) {
-                    let thisY = (i + 1) * 40 - scrollY;
-                    if (thisY > 0 && thisY <= p.height) {
-                        listCommands[i].writeText(p.width * 0.15, thisY, p);
-                    }
-
-                    if (i === listCommands.length - 1 && thisY <= p.height) {
-                        newScroll = true;
-                    }
-                    
-                    if (newScroll && i < 21) {
-                        thisY = (i + 1) * 40 + scrollY2;
-                        listCommands[i].writeText(p.width * 0.15, thisY, p);
-                    }
-
-                }
-
-                if (newScroll) {
-                    scrollY2--;
-                    if (scrollY2 === 1) {
-                        newScroll = false;
-                        scrollY = 0;
-                        scrollY2 = p.height;
-                    }
-                }
-                scrollY++;
-            }
+            
 
             p.windowResized = function() {
             /***
