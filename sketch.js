@@ -1,4 +1,4 @@
-console.log("Listener Extension running");
+console.log("SpeakEasy Extension running");
 
 window.browser = (function() {
     return window.msBrowser ||
@@ -22,21 +22,29 @@ var WORDS_TO_SHOW = 4;
 
 var cnv;
 var commands = [];
+var listCommands = [];
 var linkIndices = 1;
 var scrollY = 0;
 var newScroll = false;
 var scrollY2 = 850;
 var scrollTop = 0;
 
-function Commands(txt, command, link, color) {
+function Commands(txt, command, link) {
+/***
+**** Commands(string, string, string, p5.Color) class
+**** objects containing data concerning accessible links and
+****    how their associated 'commands' will be displayed
+***/
     this.txt = txt;
     this.command = command;
     this.link = link;
-    this.color = color;
-    //this.output = (this.txt !== this.command) ? this.command + " >> " + this.txt : this.txt;
 
     // variable p is the instance of p5 being run
     this.writeText = function(x, y, p) {
+    /***
+    **** writeText(float, float, p5 object) child function
+    **** allows for easy p5 text display for Commands objects
+    ***/
         p.fill(56);
         p.text(this.command, x, y);
     }
@@ -133,15 +141,34 @@ function executeNavigationCommand(spokenText) {
 
 
 function startSketch() {
+/***
+**** startSketch() function
+**** running p5.js library assets in instance mode (as opposed to global mode)
+**** contains p5 runtime function sketch(p), where p is a new instance of p5
+***/
 
     var sketch = function( p ) {
+    /***
+    **** sketch(p5 Object) function
+    **** manage native p5 runtime functions setup(), draw(), and windowResized
+    **** said functions and any other p5 functions or variables must be referenced
+    ****    through the p5 object 'p'
+    ***/
         p.setup = function() {
+        /***
+        **** setup() function
+        **** initialize the canvas position and size based on the user's display dimensions
+        **** analyze the webpage for all HTML <a> tags, and scrape data associated with them
+        ****    relevent data includes the text within the <a> tag, and the href link it accesses
+        **** populate this data into an array of Commands objects (defined near start of this file)
+        ***/
             let canvasWidth = p.displayWidth * 0.2;
             let canvasHeight = p.displayHeight * 0.8;
             cnv = p.createCanvas(canvasWidth, canvasHeight);
-            cnv.position(p.windowWidth - (p.width * 1.1), 50);
+            cnv.position(p.windowWidth - p.width, 50);
+            // bring the canvas to the 'front' of the webpage so that
+            //      HTML canvas elements on webpages won't cover the canvas
             cnv.style('z-index', '999');
-            //p.background('#9ec3ff');
 
             p.fill(30);
             p.textSize(22);
@@ -149,6 +176,7 @@ function startSketch() {
             var links = document.getElementsByTagName('a');
 
             for (linkElement of links) {
+                let addToDisplay = false;
                 let link = linkElement.href;
                 let txt = linkElement.text;
                 if (!/\S/.test(txt)) {continue;}
@@ -156,25 +184,29 @@ function startSketch() {
                 let command;
                 if (txt.length <= 20) {
                     command = txt;
+                    addToDisplay = true;
                 } else {
                     command = "Link " + linkIndices;
                     linkElement.text = command + ": " + linkElement.text;
                     linkIndices++;
                 }
                 let current = new Commands(txt, command, link);
-
-                //linkElement.style['background-color'] = '#9988cc';
-                //linkElement.style['color'] = 'white';
-                //console.log(txt);
-
+                if (addToDisplay) {
+                    listCommands.push(current);
+                }
                 commands.push(current);
             }
-
             speechRecognition();
         }
 
         p.draw = function() {
-            //p.background('#9ec3ff');
+        /***
+        **** draw() function
+        **** handles canvas repositioning if page is scrolled, or the window is resized
+        **** displays text of the voice 'commands' that can be used to access links on the page
+        **** displays this text as a continually scrolling list, unless all available commands 
+        ****    can fit in the canvas at once
+        ***/
             p.noStroke();
             p.fill(56);
             p.rect(0, 20, p.width * 0.95, p.height - 20);
@@ -183,30 +215,31 @@ function startSketch() {
             scrollTop = (window.pageYOffset !== undefined) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
 
             if (scrollTop > 0) {
-                cnv.position(p.windowWidth - (p.width * 1.1), 50 + scrollTop);
+                cnv.position(p.windowWidth - p.width, 50 + scrollTop);
             }
             
             this.windowResized = function() {
-                cnv.position(p.windowWidth - (p.width * 1.1), 50);
+                cnv.position(p.windowWidth - p.width , 50);
             }
             
-            if (commands.length <= 21) {
+            // p.floor((p.height - 20) * 0.025)
+            if (listCommands.length <= 21) {
                 p.noLoop();
             }
 
-            for (let i = 0; i < commands.length; i++) {
+            for (let i = 0; i < listCommands.length; i++) {
                 let thisY = (i + 1) * 40 - scrollY;
                 if (thisY > 0 && thisY <= p.height) {
-                    commands[i].writeText(p.width * 0.15, thisY, p);
+                    listCommands[i].writeText(p.width * 0.15, thisY, p);
                 }
 
-                if (i === commands.length - 1 && thisY === p.height) {
+                if (i === listCommands.length - 1 && thisY == 850) {
                     newScroll = true;
                 }
                 
                 if (newScroll && i < 21) {
                     thisY = (i + 1) * 40 + scrollY2;
-                    commands[i].writeText(p.width * 0.15, thisY, p);
+                    listCommands[i].writeText(p.width * 0.15, thisY, p);
                 }
 
             }
@@ -216,16 +249,22 @@ function startSketch() {
                 if (scrollY2 === 1) {
                     newScroll = false;
                     scrollY = 0;
-                    scrollY2 = p.height;
+                    scrollY2 = 850;
                 }
             }
             scrollY++;
 
             p.windowResized = function() {
-                cnv.position(p.windowWidth - 420, 50);
+            /***
+            **** windowResized() function
+            **** reposition canvas upon the window being 'resized' (I think that's self explanatory)
+            ***/
+                cnv.position(p.windowWidth - p.width, 50);
             };
         };
     }
 
+    // new instance of p5
+    // sketch object referring to sketch() function defined above
     var myp5 = new p5(sketch);
 }
