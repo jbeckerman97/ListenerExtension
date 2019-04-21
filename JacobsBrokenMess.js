@@ -28,7 +28,7 @@ var listCommands = [];
 var linkIndices = 1;
 var scrollY = 0;
 var newScroll = false;
-var scrollY2 = 850;
+var scrollY2;
 var scrollTop = 0;
 
 function Commands(txt, command, link) {
@@ -200,6 +200,8 @@ function startSketch() {
             // bring the canvas to the 'front' of the webpage so that
             //      HTML canvas elements on webpages won't cover the canvas
             cnv.style('z-index', '999');
+            console.log(p.height);
+            scrollY2 = p.height;
 
             p.fill(30);
             p.textSize(22);
@@ -209,7 +211,9 @@ function startSketch() {
             for (linkElement of links) {
                 let addToDisplay = false;
                 let link = linkElement.href;
-                let txt = linkElement.text;
+                
+                // Replace "&" with "and", replaceall non-alphanumeric characters with a space, then removes leading and trailing whitespace
+                let txt = linkElement.text.replace("&", "and").replace(/[^a-z0-9]/gmi, " ").trim();
                 if (!/\S/.test(txt)) {continue;}
                 //let command = (txt.length > 20) ? "Link " + linkIndices++ : txt;
                 let command;
@@ -253,8 +257,8 @@ function startSketch() {
                 cnv.position(p.windowWidth - p.width , 50);
             }
             
-            // p.floor((p.height - 20) * 0.025)
-            if (listCommands.length <= 21) {
+            let maxListElements = p.floor((p.height - 20) * 0.025);
+            if (listCommands.length <= maxListElements) {
                 p.noLoop();
             }
 
@@ -264,11 +268,11 @@ function startSketch() {
                     listCommands[i].writeText(p.width * 0.15, thisY, p);
                 }
 
-                if (i === listCommands.length - 1 && thisY === 850) {
+                if (i === listCommands.length - 1 && thisY === p.height) {
                     newScroll = true;
                 }
                 
-                if (newScroll && i < 21) {
+                if (newScroll && i < maxListElements) {
                     thisY = (i + 1) * 40 + scrollY2;
                     listCommands[i].writeText(p.width * 0.15, thisY, p);
                 }
@@ -280,7 +284,7 @@ function startSketch() {
                 if (scrollY2 === 1) {
                     newScroll = false;
                     scrollY = 0;
-                    scrollY2 = 850;
+                    scrollY2 = p.height;
                 }
             }
             scrollY++;
