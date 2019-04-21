@@ -1,7 +1,7 @@
 {
     "name": "SpeakEasy",
     "description": "Voice-navigation tool",
-    "version": "0.5",
+    "version": "1.0",
     "manifest_version": 2,
     "author": "Jake Wright and Jacob Beckerman",
 
@@ -12,10 +12,12 @@
 
     "browser_action": {
         "default_title": "I am listening ::)",
-        "default_popup": "popup.html"
+        "default_popup": "popup.html",
+        "default_icon": "icons/icon_128.png",
+        "icons": { "32": "icons/icon_32.png" }
     },
 
-    "permissions": ["tabs", "history", "file:///*"],
+    "permissions": ["tabs", "history"],
 
     "options_ui": {
         "page": "options.html",
