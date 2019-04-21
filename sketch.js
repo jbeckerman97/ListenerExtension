@@ -41,7 +41,7 @@ function Commands(txt, command, link) {
     this.command = command;
     this.link = link;
 
-    // variable p is the instance of p5 being run
+    // Variable p is the instance of p5 being run
     this.writeText = function(x, y, p) {
     /***
     **** writeText(float, float, p5 object) child function
@@ -214,7 +214,6 @@ function startSketch() {
                 // Replace "&" with "and" for speakability, replace all non-alphanumeric characters with whitespace, then remove all leading and trailing whitespace
                 txt = txt.replace("&", "and").replace(/[^a-z0-9]/gmi, " ").trim()
                 if (!/\S/.test(txt)) {continue;}
-                //let command = (txt.length > 20) ? "Link " + linkIndices++ : txt;
                 let command;
                 if (txt.length <= 20) {
                     command = txt;
@@ -256,8 +255,8 @@ function startSketch() {
                 cnv.position(p.windowWidth - p.width , 50);
             }
             
-            let max = p.floor(p.height / 40);
-            if (listCommands.length <= max) {
+            let maxListElements = p.floor(p.height / 40);
+            if (listCommands.length <= maxListElements) {
                 p.noLoop();
             }
 
@@ -271,7 +270,7 @@ function startSketch() {
                     newScroll = true;
                 }
                 
-                if (newScroll && i <= max) {
+                if (newScroll && i <= maxListElements) {
                     thisY = (i + 1) * 40 + scrollY2;
                     listCommands[i].writeText(p.width * 0.15, thisY, p);
                 }
@@ -280,7 +279,6 @@ function startSketch() {
 
             if (newScroll) {
                 scrollY2--;
-                //console.log("scrollY2: " + scrollY2);
                 if (scrollY2 <= 1) {
                     newScroll = false;
                     scrollY = 0;
