@@ -1,3 +1,16 @@
+/*
+Author: Jacob Beckerman and Jacob Wright
+Class: CCC-412-01
+Assignment: Final Project Implementation
+Description: SpeakEasy is an extension for Google Chrome that allows the user to browse the Internet with their voice.
+Certification of Authenticity:
+    I certify that this is entirely my own work, except where I have given fully-documented references to the work of others. I understand the definition and 
+    consequences of plagiarism and acknowledge that the assessor of this assignment may, for the purpose of assessing this assignment:
+        - Reproduce this assignment and provide a copy to another member of academic staff; and/or
+        - Communicate a copy of this assignment to a plagiarism checking service (which may then retain a copy of this assignment on its database for the
+          purpose of future plagiarism checking)
+*/
+
 console.log("SpeakEasy Extension running");
 
 window.browser = (function() {
@@ -247,7 +260,7 @@ function startSketch() {
             p.rect(20, 0, p.width * 0.95, p.height - 20);
             scrollTop = (window.pageYOffset !== undefined) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
 
-            if (scrollTop > 0) {
+            if (scrollTop > -1) {
                 cnv.position(p.windowWidth - p.width, 50 + scrollTop);
             }
             
