@@ -20,13 +20,15 @@ var navigationCommands = [
 
 var WORDS_TO_SHOW = 4;
 
+var NEW_TAB_FLAG = 10;
+
 var cnv;
 var commands = [];
 var listCommands = [];
 var linkIndices = 1;
 var scrollY = 0;
 var newScroll = false;
-var scrollY2 = 850;
+var scrollY2;
 var scrollTop = 0;
 
 function Commands(txt, command, link) {
@@ -51,7 +53,11 @@ function Commands(txt, command, link) {
 }
 
 function speechRecognition() {
-    var speechRecog = new (window.SpeechRecognition || window.webkitSpeechRecognition || window.mozSpeechRecognition || window.msSpeechRecognition)();
+    /*** Function speechRecognition:
+     *** This function is responsible for querying Google's Web Speech API, which returns a string containing the spoken word(s). It handles the recognition itself.
+     *** While enabled, the user's microphone is always listening for valid keywords, which must be spoken inidividually without any other speech coming before or after the keyword/key phrase.
+     ***/
+    //var speechRecog = new (window.SpeechRecognition || window.webkitSpeechRecognition || window.mozSpeechRecognition || window.msSpeechRecognition)();
     var recognition = new webkitSpeechRecognition();
 
     recognition.continuous = true;
@@ -62,8 +68,8 @@ function speechRecognition() {
     recognition.onresult = function() {
         console.log(event.results[index][0].transcript);
         for (let i = 0; i < commands.length; i++) {
-            isSpokenEqualToLink = stringManipulation(event.results[index][0].transcript, commands[i].command);
-            if (isSpokenEqualToLink === 10) { break; }
+            isSpokenEqualToLink = stringManipulation(event.results[index][0].transcript, commands[i].command); // Determines if the user's speech is equal to a keyword/key phrase.
+            if (isSpokenEqualToLink === NEW_TAB_FLAG) { break; }
             console.log(event.results[index][0].transcript);
             if (isSpokenEqualToLink) {
                 console.log('success');
@@ -75,24 +81,37 @@ function speechRecognition() {
 }
 
 function stringManipulation(spokenText, linkText) {
-    
-    spokenText = spokenText.replace(/\s+/g, ''); // Remove whitespace
+    /*** Function stringManipulation:
+     *** Parameters:
+     ***    String spokenText: The user's spoken phrase
+     ***    String linkText: The text of a hyperlink
+     *** This function manipulates the parameter string to eliminate unspeakable characters (ex. quotes, symbols) and whitespace to ensure the spoken phrase and the desired text
+     *** on a page can be compared successfully.
+     ***/
+    spokenText = spokenText.replace(/\s+/g, ''); // Removes whitespace from the user's spoken phrase.
     spokenText = spokenText.toLowerCase();
 
+    /* The "New URL" command functions differently than other browser commands. The first six characters of the whitespace-removed and lowercase spokenText will be "newurl".
+     * Additionally, browser navigation commands take higher priority over Internet navigation commands, so executeNavigationCommand() is called first.
+     */
     let newURLCommand = spokenText.substring(0, 6);
     if (navigationCommands.indexOf(spokenText) > -1 || newURLCommand == "newurl") {
         let navTest = executeNavigationCommand(spokenText);
         return navTest;
     }
     
+    /* Before spokenText and linkText can be compared, the "&" symbol must be replaced with "and" to match the user's dictated command. This is necessary because all non-alphanumeric
+     * will be removed from linkText, which would also remove the "&" symbol and therefore make any links containing it uncomparable to spokenText.
+     */
     if (linkText.includes("&")) {
         linkText = linkText.replace("&", "and");
     }
 
-    // If things stop working, get rid of and replace
+    // This first removes all non-alphanumeric characters and replaces them with spaces. All whitespace characters are removed afterwards.
     linkText = linkText.replace(/[^a-z0-9]/gmi, " ").replace(/\s+/g, ''); // Remove whitespace
     linkText = linkText.toLowerCase();
 
+    // webkitSpeechRecognition has trouble interpreting the phrases "link 1," "link 2," and "link 4" when spoken. This if-else if ladder explicitly corrects any of these errors.
     if (spokenText === "lincone" && linkText === "link1") {
         return true;
     } else if (spokenText === "linkto" && linkText === "link2") {
@@ -109,6 +128,15 @@ function stringManipulation(spokenText, linkText) {
 }
 
 function executeNavigationCommand(spokenText) {
+    /*** Function executeNavigationCommand:
+     *** Parameters:
+     ***    String spokenText: The user's spoken phrase with all whitespace removed
+     *** This function executes browser navgation commands (as opposed to Internet navigation).
+     ***/
+
+    /* Navigating to a new URL requires slightly different behavior based on how user's use this command. The first six characters from spokenText are examined to make sure the command is
+     * "newurl," with all remaining characters in spokenText being the website the user wants to navigate to. Finally, the appropriate prefix must be added to the start of the website.
+     */
     if (spokenText.substring(0, 6) == "newurl") {
         let website = spokenText.substring(6, spokenText.length);
         window.location.assign("http://www." + website);
@@ -136,7 +164,10 @@ function executeNavigationCommand(spokenText) {
             break;
     }
 
-    return 10;
+    /* The command to open a new tab will result in several new tabs being opened as a result of how webkitSpeechRecognition returns a transcript of the user's speech.
+     * By returning a flag with a specified value, speechRecognition() can end its logic before that happens and only open a single new tab.
+     */
+    return NEW_TAB_FLAG;
 }
 
 
@@ -169,6 +200,7 @@ function startSketch() {
             // bring the canvas to the 'front' of the webpage so that
             //      HTML canvas elements on webpages won't cover the canvas
             cnv.style('z-index', '999');
+            scrollY2 = p.height;
 
             p.fill(30);
             p.textSize(22);
@@ -179,6 +211,8 @@ function startSketch() {
                 let addToDisplay = false;
                 let link = linkElement.href;
                 let txt = linkElement.text;
+                // Replace "&" with "and" for speakability, replace all non-alphanumeric characters with whitespace, then remove all leading and trailing whitespace
+                txt = txt.replace("&", "and").replace(/[^a-z0-9]/gmi, " ").trim()
                 if (!/\S/.test(txt)) {continue;}
                 //let command = (txt.length > 20) ? "Link " + linkIndices++ : txt;
                 let command;
@@ -222,8 +256,8 @@ function startSketch() {
                 cnv.position(p.windowWidth - p.width , 50);
             }
             
-            // p.floor((p.height - 20) * 0.025)
-            if (listCommands.length <= 21) {
+            let max = p.floor(p.height / 40);
+            if (listCommands.length <= max) {
                 p.noLoop();
             }
 
@@ -233,11 +267,11 @@ function startSketch() {
                     listCommands[i].writeText(p.width * 0.15, thisY, p);
                 }
 
-                if (i === listCommands.length - 1 && thisY == 850) {
+                if (i === listCommands.length - 1 && thisY <= p.height) {
                     newScroll = true;
                 }
                 
-                if (newScroll && i < 21) {
+                if (newScroll && i <= max) {
                     thisY = (i + 1) * 40 + scrollY2;
                     listCommands[i].writeText(p.width * 0.15, thisY, p);
                 }
@@ -246,10 +280,11 @@ function startSketch() {
 
             if (newScroll) {
                 scrollY2--;
-                if (scrollY2 === 1) {
+                //console.log("scrollY2: " + scrollY2);
+                if (scrollY2 <= 1) {
                     newScroll = false;
                     scrollY = 0;
-                    scrollY2 = 850;
+                    scrollY2 = p.height;
                 }
             }
             scrollY++;
